@@ -1,0 +1,5 @@
+build/
+*.lock
+.DS_Store
+.firebase/
+.env
