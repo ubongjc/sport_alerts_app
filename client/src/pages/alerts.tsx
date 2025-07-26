@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Alert } from "../../../shared/schema";
 import ConfiguredAlertsList from "../components/ConfiguredAlertsList";
-import Toast from "../components/Toast";
+import Notification from "../components/Notification";
 
 export default function Alerts() {
   const [, setLocation] = useLocation();
@@ -47,7 +47,7 @@ export default function Alerts() {
       </div>
 
       {/* Bottom-toast for errors */}
-      {toastMsg && <Toast message={toastMsg} onClose={() => setToastMsg(null)} />}
+      {toastMsg && <Notification message={toastMsg} onClose={() => setToastMsg(null)} />}  
     </div>
   );
 }
