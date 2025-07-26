@@ -1,70 +1,77 @@
+// server/index.ts
+import "dotenv/config";
+
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { isDeepStrictEqual as isEqual } from "node:util";
+import { Alert } from "../shared/schema";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// In-memory store for this session
+let customAlerts: Alert[] = [];
+
+// ── Logging middleware ───────────────────────────────────────────────────────
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
-
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
+  let capturedJsonResponse: Record<string, any> | undefined;
+  const originalJson = res.json;
+  res.json = function (body, ...args) {
+    capturedJsonResponse = body;
+    return originalJson.apply(res, [body, ...args]);
   };
-
   res.on("finish", () => {
-    const duration = Date.now() - start;
     if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
+      let line = `${req.method} ${path} ${res.statusCode} in ${Date.now() - start}ms`;
       if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+        line += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
-
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-
-      log(logLine);
+      log(line.length > 80 ? line.slice(0, 79) + "…" : line);
     }
   });
-
   next();
 });
 
-(async () => {
+// ── Custom-Alerts Endpoints (no DB) ──────────────────────────────────────────
+// GET all configured alerts
+app.get("/api/customAlerts", (_req: Request, res: Response) => {
+  res.json(customAlerts);
+});
+
+// POST a new alert, dedupe in-memory
+app.post("/api/customAlerts", (req: Request, res: Response) => {
+  const newAlert = req.body as Alert;
+  if (customAlerts.some((a) => isEqual(a, newAlert))) {
+    return res.status(409).json({ message: "This alert is already configured." });
+  }
+  customAlerts.push(newAlert);
+  return res.json(customAlerts);
+});
+
+// ── Register your other routes, Vite, and error handling ────────────────────
+;(async () => {
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
-
     res.status(status).json({ message });
     throw err;
   });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = 5000;
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
-  });
+  const port = Number(process.env.PORT) || 5000;
+  server.listen({ port, host: "0.0.0.0", reusePort: true }, () =>
+    log(`serving on port ${port}`)
+  );
 })();
+
