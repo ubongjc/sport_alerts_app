@@ -1,0 +1,436 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Aston Villa claret and blue theme - with darker blue */
+  --primary: 345 82% 36%; /* Claret - richer */
+  --primary-foreground: 0 0% 98%;
+  --secondary: 220 70% 35%; /* Darker, more subdued blue */
+  --secondary-foreground: 0 0% 98%;
+  --accent: 345 75% 45%; /* Lighter claret */
+  --accent-foreground: 0 0% 98%;
+  
+  /* Custom colors for specific elements */
+  --claret: 345 82% 36%;
+  --sky-blue: 220 70% 35%; /* Matching dark blue */
+  --claret-hover: 345 75% 31%;
+  --sky-blue-hover: 220 70% 30%;
+  
+  /* Tailwind Button and UI Elements */
+  --background: 0 0% 98%;
+  --foreground: 0 0% 15%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 15%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 15%;
+  --border: 0 0% 90%;
+  --input: 0 0% 90%;
+  --ring: 220 70% 35%; /* Blue ring instead of claret */
+  --radius: 0.5rem;
+  --muted: 0 0% 96%;
+  --muted-foreground: 0 0% 45%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+  
+  /* Override default success/green colors with blue */
+  --success: 220 70% 35%; /* Use blue instead of green */
+  --success-foreground: 0 0% 98%;
+}
+
+/* Sport-specific animations with 3D effects */
+
+/* Soccer bicycle kick animation */
+@keyframes soccer-bicycle-kick-player {
+  0% { transform: translateY(0) rotate(0) scale(1); }
+  15% { transform: translateY(-5px) rotate(-15deg) scale(1); }
+  30% { transform: translateY(-10px) rotate(-45deg) scale(1.05); }
+  45% { transform: translateY(-15px) rotate(-120deg) scale(1.1); } /* At peak of bicycle kick */
+  60% { transform: translateY(-10px) rotate(-200deg) scale(1.05); }
+  75% { transform: translateY(-5px) rotate(-330deg) scale(1); }
+  90% { transform: translateY(0) rotate(-350deg) scale(1); }
+  100% { transform: translateY(0) rotate(-360deg) scale(1); }
+}
+
+/* Ball movement for soccer animation - arcing shot */
+@keyframes soccer-ball-arc {
+  0% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; }
+  20% { transform: translate(10px, -20px) scale(0.95) rotate(72deg); opacity: 1; }
+  40% { transform: translate(25px, -35px) scale(0.9) rotate(144deg); opacity: 0.95; }
+  60% { transform: translate(40px, -30px) scale(0.85) rotate(216deg); opacity: 0.9; }
+  80% { transform: translate(55px, -10px) scale(0.8) rotate(288deg); opacity: 0.8; }
+  100% { transform: translate(65px, 5px) scale(0.75) rotate(360deg); opacity: 0.7; }
+}
+
+.animate-soccer-kick .soccer-player {
+  animation: soccer-bicycle-kick-player 1.5s ease-in-out;
+  transform-origin: center center;
+}
+
+.animate-soccer-kick .ball {
+  animation: soccer-ball-arc 1.5s ease-out forwards;
+}
+
+/* Basketball slam dunk animation */
+@keyframes basketball-dunk-player {
+  0% { transform: translateY(0) scale(1); }
+  20% { transform: translateY(-5px) scale(0.98); } /* Begin crouch */
+  40% { transform: translateY(-25px) scale(1.1); } /* Jump up */
+  60% { transform: translateY(-30px) scale(1.15); } /* At peak of jump */
+  70% { transform: translateY(-25px) scale(1.1); } /* Coming down with arm extended */
+  85% { transform: translateY(-10px) scale(1.05); } /* Almost landed */
+  100% { transform: translateY(0) scale(1); } /* Landed */
+}
+
+@keyframes basketball-dunk-ball {
+  0% { transform: translate(0, 0) scale(1); opacity: 1; }
+  20% { transform: translate(0, -5px) scale(1); opacity: 1; } /* Ball in hands during crouch */
+  40% { transform: translate(0, -25px) scale(1); opacity: 1; } /* Ball rising with player */
+  60% { transform: translate(0, -40px) scale(1.2); opacity: 1; } /* Ball above rim */
+  70% { transform: translate(0, -30px) scale(0.9); opacity: 1; } /* Ball through hoop */
+  85% { transform: translate(0, -10px) scale(0.85); opacity: 1; } /* Ball falling */
+  100% { transform: translate(0, 10px) scale(0.8); opacity: 0.8; } /* Ball bouncing */
+}
+
+.animate-basketball-shoot .player {
+  animation: basketball-dunk-player 1.2s ease-in-out;
+}
+
+.animate-basketball-shoot .basketball {
+  animation: basketball-dunk-ball 1.2s ease-in-out;
+}
+
+/* Baseball swing animation */
+@keyframes baseball-swing {
+  0% { transform: rotate(0) translateX(0); }
+  20% { transform: rotate(-40deg) translateX(-10px); }
+  40% { transform: rotate(-20deg) translateX(-5px); }
+  60% { transform: rotate(30deg) translateX(10px); }
+  80% { transform: rotate(15deg) translateX(5px); }
+  100% { transform: rotate(0) translateX(0); }
+}
+
+@keyframes baseball-hit {
+  0% { transform: translateX(0) scale(1); opacity: 1; }
+  20% { transform: translateX(0) scale(1); opacity: 1; }
+  40% { transform: translateX(15px) translateY(-15px) scale(0.9); opacity: 0.9; }
+  60% { transform: translateX(30px) translateY(-25px) scale(0.8); opacity: 0.8; }
+  80% { transform: translateX(40px) translateY(-20px) scale(0.7); opacity: 0.4; }
+  100% { transform: translateX(50px) translateY(-10px) scale(0.6); opacity: 0; }
+}
+
+.animate-baseball-swing .bat {
+  animation: baseball-swing 1.5s ease-in-out;
+}
+
+.animate-baseball-swing .ball {
+  animation: baseball-hit 1.5s ease-out forwards;
+}
+
+/* Football throw animation */
+@keyframes football-windup {
+  0% { transform: rotate(0) translateX(0) scale(1); }
+  25% { transform: rotate(-15deg) translateX(-8px) scale(0.95); }
+  50% { transform: rotate(-5deg) translateX(-3px) scale(0.97); }
+  75% { transform: rotate(20deg) translateX(8px) scale(1.05); }
+  100% { transform: rotate(0) translateX(0) scale(1); }
+}
+
+@keyframes football-throw {
+  0% { transform: translateX(0) rotate(0) scale(1); opacity: 1; }
+  25% { transform: translateX(0) rotate(0) scale(1); opacity: 1; }
+  50% { transform: translateX(20px) rotate(180deg) scale(0.9); opacity: 0.9; }
+  75% { transform: translateX(35px) rotate(360deg) scale(0.8); opacity: 0.6; }
+  100% { transform: translateX(50px) rotate(540deg) scale(0.7); opacity: 0; }
+}
+
+.animate-football-throw .player {
+  animation: football-windup 1.5s ease-in-out;
+}
+
+.animate-football-throw .ball {
+  animation: football-throw 1.5s ease-out forwards;
+}
+
+/* Hockey slap shot animation */
+@keyframes hockey-windup {
+  0% { transform: rotate(0) translateY(0); }
+  25% { transform: rotate(-20deg) translateY(5px); }
+  50% { transform: rotate(-10deg) translateY(2px); }
+  75% { transform: rotate(25deg) translateY(-5px); }
+  100% { transform: rotate(0) translateY(0); }
+}
+
+@keyframes hockey-puck {
+  0% { transform: translateX(0) scale(1); opacity: 1; }
+  25% { transform: translateX(0) scale(1); opacity: 1; }
+  50% { transform: translateX(25px) scale(0.9); opacity: 0.9; }
+  75% { transform: translateX(40px) scale(0.8); opacity: 0.6; }
+  100% { transform: translateX(55px) scale(0.7); opacity: 0; }
+}
+
+.animate-hockey-slap .stick {
+  animation: hockey-windup 1.2s ease-in-out;
+}
+
+.animate-hockey-slap .puck {
+  animation: hockey-puck 1.2s ease-out forwards;
+}
+
+/* Rugby pass animation */
+@keyframes rugby-pivot {
+  0% { transform: rotate(0) translateX(0); }
+  25% { transform: rotate(-15deg) translateX(-8px); }
+  50% { transform: rotate(-5deg) translateX(-3px); }
+  75% { transform: rotate(20deg) translateX(8px); }
+  100% { transform: rotate(0) translateX(0); }
+}
+
+@keyframes rugby-ball-pass {
+  0% { transform: translateX(0) rotate(0) scale(1); opacity: 1; }
+  30% { transform: translateX(0) rotate(0) scale(1); opacity: 1; }
+  60% { transform: translateX(30px) rotate(90deg) scale(0.9); opacity: 0.8; }
+  100% { transform: translateX(50px) rotate(180deg) scale(0.7); opacity: 0; }
+}
+
+.animate-rugby-pass .player {
+  animation: rugby-pivot 1.5s ease-in-out;
+}
+
+.animate-rugby-pass .ball {
+  animation: rugby-ball-pass 1.5s ease-out forwards;
+}
+
+/* Cricket swing animation */
+@keyframes cricket-bat-swing {
+  0% { transform: rotate(0) translateX(0); }
+  25% { transform: rotate(-30deg) translateX(-5px); }
+  50% { transform: rotate(30deg) translateX(10px); }
+  75% { transform: rotate(15deg) translateX(5px); }
+  100% { transform: rotate(0) translateX(0); }
+}
+
+@keyframes cricket-ball-hit {
+  0% { transform: translateX(0) scale(1); opacity: 1; }
+  30% { transform: translateX(0) scale(1); opacity: 1; }
+  60% { transform: translateX(25px) translateY(-15px) scale(0.9); opacity: 0.8; }
+  100% { transform: translateX(45px) translateY(-5px) scale(0.7); opacity: 0; }
+}
+
+.animate-cricket-swing .bat {
+  animation: cricket-bat-swing 1.5s ease-in-out;
+}
+
+.animate-cricket-swing .ball {
+  animation: cricket-ball-hit 1.5s ease-out forwards;
+}
+
+/* Tennis serve animation */
+@keyframes tennis-serve {
+  0% { transform: rotate(0) translateY(0); }
+  25% { transform: rotate(-20deg) translateY(-5px); }
+  50% { transform: rotate(30deg) translateY(0); }
+  75% { transform: rotate(15deg) translateY(0); }
+  100% { transform: rotate(0) translateY(0); }
+}
+
+@keyframes tennis-ball-serve {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  25% { transform: translateY(-20px) scale(0.95); opacity: 1; }
+  50% { transform: translateY(-5px) translateX(15px) scale(0.9); opacity: 0.9; }
+  75% { transform: translateY(5px) translateX(30px) scale(0.8); opacity: 0.6; }
+  100% { transform: translateY(0) translateX(45px) scale(0.7); opacity: 0; }
+}
+
+.animate-tennis-serve .racket {
+  animation: tennis-serve 1.2s ease-in-out;
+}
+
+.animate-tennis-serve .ball {
+  animation: tennis-ball-serve 1.2s ease-out forwards;
+}
+
+/* Boxing animation */
+@keyframes boxing-punch {
+  0% { transform: translateX(0) rotate(0); }
+  25% { transform: translateX(-5px) rotate(-5deg); }
+  50% { transform: translateX(15px) rotate(5deg); }
+  75% { transform: translateX(5px) rotate(2deg); }
+  100% { transform: translateX(0) rotate(0); }
+}
+
+.animate-boxing-punch {
+  animation: boxing-punch 0.8s ease-in-out;
+}
+
+/* MMA animation */
+@keyframes mma-move {
+  0% { transform: translateY(0) scale(1); }
+  25% { transform: translateY(-5px) scale(0.97); }
+  50% { transform: translateY(8px) scale(1.03); }
+  75% { transform: translateY(-3px) scale(0.99); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+.animate-mma-move {
+  animation: mma-move 1.2s ease-in-out;
+}
+
+/* Active and hover sport states */
+.sport-animation {
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.sport-animation:hover {
+  transform: scale(1.05);
+  filter: brightness(1.1);
+}
+
+.sport-active {
+  transform: scale(1.1);
+  filter: drop-shadow(0 0 4px rgba(220, 70, 35, 0.5));
+  color: hsl(var(--claret));
+  stroke: hsl(var(--sky-blue));
+}
+
+.sport-hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+}
+
+/* Main animation classes for all sports */
+.animate-soccer-kick {
+  animation: soccer-kick 1.5s ease-in-out;
+}
+
+.animate-basketball-shoot {
+  animation: basketball-shoot 1.2s ease-in-out;
+}
+
+.animate-baseball-swing {
+  animation: baseball-swing 1.5s ease-in-out;
+}
+
+.animate-football-throw {
+  animation: football-throw 2s ease-in-out;
+}
+
+.animate-hockey-slap {
+  animation: hockey-slap 2s ease-in-out;
+}
+
+.animate-rugby-pass {
+  animation: rugby-pass 2s ease-in-out;
+}
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 222.2 47.4% 11.2%;
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 47.4% 11.2%;
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 47.4% 11.2%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --primary: 187 100% 22%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 358 75% 56%;
+  --secondary-foreground: 0 0% 100%;
+  --accent: 44 92% 70%;
+  --accent-foreground: 222.2 47.4% 11.2%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --success: 162 60% 40%;
+  --success-foreground: 0 0% 100%;
+  --warning: 32 100% 64%;
+  --warning-foreground: 0 0% 0%;
+  --ring: 215 20.2% 65.1%;
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --popover: 222.2 84% 4.9%;
+  --popover-foreground: 210 40% 98%;
+  --card: 222.2 84% 4.9%;
+  --card-foreground: 210 40% 98%;
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+  --primary: 187 100% 22%; 
+  --primary-foreground: 0 0% 100%;
+  --secondary: 358 75% 56%;
+  --secondary-foreground: 0 0% 98%;
+  --accent: 44 92% 70%;
+  --accent-foreground: 222.2 47.4% 11.2%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --success: 162 60% 40%;
+  --success-foreground: 0 0% 100%;
+  --warning: 32 100% 64%;
+  --warning-foreground: 0 0% 0%;
+  --ring: 217.2 32.6% 17.5%;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-gray-100 text-foreground;
+  }
+}
+
+/* Custom animations */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.live-pulse {
+  position: relative;
+}
+
+.live-pulse::before {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: hsl(var(--success));
+  border-radius: 50%;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  animation: pulse 2s infinite;
+}
+
+.notification-enter {
+  animation: slideIn 0.3s ease-out forwards;
+}
+
+@keyframes slideIn {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Custom scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}

@@ -1,0 +1,294 @@
+import {
+  type User,
+  type InsertUser,
+  type Team,
+  type InsertTeam,
+  type League,
+  type InsertLeague,
+  type Match,
+  type InsertMatch,
+  type MatchEvent,
+  type InsertMatchEvent,
+  type AlertPreferences,
+  type InsertAlertPreferences,
+  type AlertPreferencesData,
+} from "@shared/schema";
+import * as fs from 'fs';
+import * as path from 'path';
+
+// This interface defines the storage operations
+export interface IStorage {
+  // User operations
+  getUser(id: number): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  createUser(user: InsertUser): Promise<User>;
+
+  // Team operations
+  getTeam(id: number): Promise<Team | undefined>;
+  getTeams(): Promise<Team[]>;
+  createTeam(team: InsertTeam): Promise<Team>;
+
+  // League operations
+  getLeague(id: number): Promise<League | undefined>;
+  getLeagues(): Promise<League[]>;
+  createLeague(league: InsertLeague): Promise<League>;
+
+  // Match operations
+  getMatch(id: number): Promise<Match | undefined>;
+  getMatchesWithDetails(): Promise<any[]>;
+  getUpcomingMatches(): Promise<any[]>;
+  getLiveMatches(): Promise<any[]>;
+  createMatch(match: InsertMatch): Promise<Match>;
+  updateMatchScore(id: number, homeScore: number, awayScore: number): Promise<Match | undefined>;
+  updateMatchStatus(id: number, status: string, currentMinute?: number): Promise<Match | undefined>;
+
+  // Match event operations
+  getMatchEvents(matchId: number): Promise<MatchEvent[]>;
+  createMatchEvent(event: InsertMatchEvent): Promise<MatchEvent>;
+
+  // Alert preferences operations
+  getAlertPreferences(userId: number): Promise<AlertPreferences | undefined>;
+  createAlertPreferences(prefs: InsertAlertPreferences): Promise<AlertPreferences>;
+  updateAlertPreferences(id: number, preferences: AlertPreferencesData): Promise<AlertPreferences | undefined>;
+}
+
+// Database implementation of the storage interface
+export class DatabaseStorage implements IStorage {
+  // User operations
+  async getUser(id: number): Promise<User | undefined> {
+    const result = await db.select().from(users).where(eq(users.id, id));
+    return result[0];
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const result = await db.select().from(users).where(eq(users.username, username));
+    return result[0];
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const result = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return result[0];
+  }
+
+  // Team operations
+  async getTeam(id: number): Promise<Team | undefined> {
+    const result = await db.select().from(teams).where(eq(teams.id, id));
+    return result[0];
+  }
+
+  async getTeams(): Promise<Team[]> {
+    return db.select().from(teams);
+  }
+
+  async createTeam(insertTeam: InsertTeam): Promise<Team> {
+    const result = await db
+      .insert(teams)
+      .values(insertTeam)
+      .returning();
+    return result[0];
+  }
+
+  // League operations
+  async getLeague(id: number): Promise<League | undefined> {
+    const result = await db.select().from(leagues).where(eq(leagues.id, id));
+    return result[0];
+  }
+
+  async getLeagues(): Promise<League[]> {
+    return db.select().from(leagues);
+  }
+
+  async createLeague(insertLeague: InsertLeague): Promise<League> {
+    const result = await db
+      .insert(leagues)
+      .values(insertLeague)
+      .returning();
+    return result[0];
+  }
+
+  // Match operations
+  async getMatch(id: number): Promise<Match | undefined> {
+    const result = await db.select().from(matches).where(eq(matches.id, id));
+    return result[0];
+  }
+
+  async getMatchesWithDetails(): Promise<any[]> {
+    const allMatches = await db.select().from(matches);
+    
+    return Promise.all(
+      allMatches.map(async (match) => {
+        const homeTeam = await this.getTeam(match.homeTeamId);
+        const awayTeam = await this.getTeam(match.awayTeamId);
+        const league = await this.getLeague(match.leagueId);
+        const events = await this.getMatchEvents(match.id);
+        
+        return {
+          ...match,
+          homeTeam,
+          awayTeam,
+          league,
+          events,
+        };
+      })
+    );
+  }
+
+  async getUpcomingMatches(): Promise<any[]> {
+    const upcomingMatches = await db.select()
+      .from(matches)
+      .where(eq(matches.status, 'upcoming'));
+    
+    // If no upcoming matches, we'll return an empty array
+    // Real data will be fetched from the API
+    if (upcomingMatches.length === 0) {
+      return [];
+    }
+    
+    return Promise.all(
+      upcomingMatches.map(async (match) => {
+        const homeTeam = await this.getTeam(match.homeTeamId);
+        const awayTeam = await this.getTeam(match.awayTeamId);
+        const league = await this.getLeague(match.leagueId);
+        const events = await this.getMatchEvents(match.id);
+        
+        return {
+          ...match,
+          homeTeam,
+          awayTeam,
+          league,
+          events,
+        };
+      })
+    );
+  }
+
+  async getLiveMatches(): Promise<any[]> {
+    const liveMatches = await db.select()
+      .from(matches)
+      .where(eq(matches.status, 'live'));
+    
+    return Promise.all(
+      liveMatches.map(async (match) => {
+        const homeTeam = await this.getTeam(match.homeTeamId);
+        const awayTeam = await this.getTeam(match.awayTeamId);
+        const league = await this.getLeague(match.leagueId);
+        const events = await this.getMatchEvents(match.id);
+        
+        return {
+          ...match,
+          homeTeam,
+          awayTeam,
+          league,
+          events,
+        };
+      })
+    );
+  }
+
+  async createMatch(insertMatch: InsertMatch): Promise<Match> {
+    const result = await db
+      .insert(matches)
+      .values(insertMatch)
+      .returning();
+    return result[0];
+  }
+
+  async updateMatchScore(id: number, homeScore: number, awayScore: number): Promise<Match | undefined> {
+    const result = await db
+      .update(matches)
+      .set({ homeScore, awayScore })
+      .where(eq(matches.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async updateMatchStatus(id: number, status: string, currentMinute?: number): Promise<Match | undefined> {
+    const result = await db
+      .update(matches)
+      .set({ 
+        status,
+        currentMinute: currentMinute ?? null
+      })
+      .where(eq(matches.id, id))
+      .returning();
+    return result[0];
+  }
+
+  // Match event operations
+  async getMatchEvents(matchId: number): Promise<MatchEvent[]> {
+    return db.select()
+      .from(matchEvents)
+      .where(eq(matchEvents.matchId, matchId));
+  }
+
+  async createMatchEvent(insertEvent: InsertMatchEvent): Promise<MatchEvent> {
+    const result = await db
+      .insert(matchEvents)
+      .values(insertEvent)
+      .returning();
+    return result[0];
+  }
+
+  // Alert preferences operations
+  async getAlertPreferences(userId: number): Promise<AlertPreferences | undefined> {
+    const result = await db
+      .select()
+      .from(alertPreferences)
+      .where(eq(alertPreferences.userId, userId));
+    return result[0];
+  }
+
+  async createAlertPreferences(insertPrefs: InsertAlertPreferences): Promise<AlertPreferences> {
+    const result = await db
+      .insert(alertPreferences)
+      .values(insertPrefs)
+      .returning();
+    return result[0];
+  }
+
+  async updateAlertPreferences(id: number, preferences: AlertPreferencesData): Promise<AlertPreferences | undefined> {
+    const result = await db
+      .update(alertPreferences)
+      .set({ preferences })
+      .where(eq(alertPreferences.id, id))
+      .returning();
+    return result[0];
+  }
+
+  // Initialize sample data
+  async initializeSampleData() {
+    try {
+      // Check if database already has data
+      const teamsResult = await db.select().from(teams);
+      
+      if (teamsResult.length > 0) {
+        console.log("Database already has data, skipping initialization");
+        return;
+      }
+      
+      console.log("Initializing database with sample data...");
+      
+      // Create sample leagues, teams, matches, etc.
+      // Implementation details similar to in-memory initialization
+      
+      console.log("Database initialization complete");
+    } catch (error) {
+      console.error("Error initializing database sample data:", error);
+    }
+  }
+}
+
+// Export the database implementation
+export const storage = new DatabaseStorage();
+
+// Initialize the database with sample data when the app starts
+(async () => {
+  try {
+    await storage.initializeSampleData();
+  } catch (error) {
+    console.error("Error initializing database:", error);
+  }
+})();
